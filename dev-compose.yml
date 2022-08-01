@@ -1,0 +1,52 @@
+version: '3'
+services:
+  postgres-checkly:
+    image: "postgres:14.2-alpine"
+    container_name: postgres-checkly
+    restart: always
+    ports:
+      - "6432:5432"
+    environment:
+      - POSTGRES_DB=checkly
+      - POSTGRES_USER=checkly
+      - POSTGRES_PASSWORD=checkly
+    volumes:
+      - "~/pgdata:/var/lib/postgresql/data"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U checkly" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  backend-checkly:
+    image: "backend-checkly"
+    container_name: backend-checkly
+    environment:
+      - SETTINGS_DIR=/app/etc
+    network_mode: "host"
+    volumes:
+      - "./backend/src/etc:/app/etc:ro"
+      - "./backend/logs:/app/logs"
+    depends_on:
+      postgres-checkly:
+        condition: service_healthy
+  nginx-checkly:
+    image: "nginx:stable-alpine"
+    container_name: "nginx-checkly"
+    network_mode: "host"
+    volumes:
+      - "./frontend/nginx-config/nginx.conf:/etc/nginx/nginx.conf:ro"
+      - "./frontend/logs:/app/logs"
+    depends_on:
+      - backend-checkly
+      - swagger-ui
+  swagger-ui:
+    image: "swaggerapi/swagger-ui"
+    container_name: "swagger-checkly"
+    ports:
+      - "81:8080"
+    volumes:
+      - ./backend/doc:/usr/share/nginx/html/doc
+    environment:
+      API_URL: doc/swagger-ui/swagger.json
+    depends_on:
+      - backend-checkly

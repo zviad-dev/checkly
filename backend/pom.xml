@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>ru.hh.checkly</groupId>
+    <artifactId>checkly-backend</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <packaging>jar</packaging>
+
+    <properties>
+        <nab.version>4.33.1</nab.version>
+        <spring.mail.version>2.5.6</spring.mail.version>
+        <jjwt.version>0.11.5</jjwt.version>
+        <liquibase.version>3.4.1</liquibase.version>
+        <vk-sdk.version>1.0.14</vk-sdk.version>
+        <swagger-maven-plugin-version>3.1.8</swagger-maven-plugin-version>
+    </properties>
+
+    <repositories>
+        <repository>
+            <id>hh-public</id>
+            <name>hh public releases repository</name>
+            <url>https://m2.hh.ru/content/repositories/public-releases</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>ru.hh.nab</groupId>
+            <artifactId>nab-starter</artifactId>
+            <version>${nab.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ru.hh.nab</groupId>
+            <artifactId>nab-hibernate</artifactId>
+            <version>${nab.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ru.hh.nab</groupId>
+            <artifactId>nab-testbase</artifactId>
+            <version>${nab.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+            <version>${spring.mail.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>${jjwt.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId> <!-- or jjwt-gson if Gson is preferred -->
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.javassist</groupId>
+            <artifactId>javassist</artifactId>
+            <version>3.25.0-GA</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.9.7</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>2.9.7</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.liquibase</groupId>
+            <artifactId>liquibase-core</artifactId>
+            <version>${liquibase.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.vk.api</groupId>
+            <artifactId>sdk</artifactId>
+            <version>${vk-sdk.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-jersey2-jaxrs</artifactId>
+            <version>1.5.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ru.hh.nab</groupId>
+            <artifactId>nab-websocket</artifactId>
+            <version>${nab.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.0</version>
+                <configuration>
+                    <release>11</release>
+                    <showDeprecation>true</showDeprecation>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.2.2</version>
+                <configuration>
+                    <finalName>${project.artifactId}</finalName>
+                    <transformers>
+                        <transformer
+                                implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                        <transformer
+                                implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                            <manifestEntries>
+                                <Main-Class>ru.hh.checkly.App</Main-Class>
+                            </manifestEntries>
+                        </transformer>
+                    </transformers>
+                    <filters>
+                        <filter>
+                            <artifact>*:*</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.SF</exclude>
+                                <exclude>META-INF/*.DSA</exclude>
+                                <exclude>META-INF/*.RSA</exclude>
+                            </excludes>
+                        </filter>
+                    </filters>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <settingsDir>${basedir}/src/etc</settingsDir>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.6.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <systemProperties>
+                        <systemProperty>
+                            <key>settingsDir</key>
+                            <value>src/etc</value>
+                        </systemProperty>
+                    </systemProperties>
+                    <mainClass>ru.hh.checkly.App</mainClass>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.github.kongchen</groupId>
+                <artifactId>swagger-maven-plugin</artifactId>
+                <version>3.1.8</version>
+                <configuration>
+                    <apiSources>
+                        <apiSource>
+                            <springmvc>false</springmvc>
+                            <locations>ru.hh.checkly.resource</locations>
+                            <schemes>http,https</schemes>
+                            <host>localhost</host>
+                            <basePath>/api</basePath>
+                            <info>
+                                <title>Checkly Open API</title>
+                                <version>v1</version>
+                                <description>Checkly HH API</description>
+                                <termsOfService>https://github.com/SuhoyVasya/CHECKLY</termsOfService>
+                                <contact>
+                                    <email>checklyhh@gmail.com</email>
+                                </contact>
+                                <license>
+                                    <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
+                                    <name>Apache 2.0</name>
+                                </license>
+                            </info>
+                            <outputFormats>json</outputFormats>
+                            <outputPath>${basedir}/doc/document.html</outputPath>
+                            <swaggerDirectory>doc/swagger-ui</swaggerDirectory>
+                            <securityDefinitions>
+                                <securityDefinition>
+                                    <jsonPath>${basedir}/securityDefinitions.json</jsonPath>
+                                </securityDefinition>
+                            </securityDefinitions>
+                        </apiSource>
+                    </apiSources>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+    <profiles>
+        <profile>
+            <id>docker</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.spotify</groupId>
+                        <artifactId>dockerfile-maven-plugin</artifactId>
+                        <version>1.4.13</version>
+                        <configuration>
+                            <repository>backend-checkly</repository>
+                            <dockerfile>Dockerfile</dockerfile>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>default</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>build</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

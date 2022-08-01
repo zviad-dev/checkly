@@ -1,0 +1,17 @@
+INSERT INTO answer(recommendation_id, question_id, answer)
+VALUES (1, 1, null),
+       (1, 2, null),
+       (2, 1, null),
+       (2, 2, null),
+       (5, 5, null),
+       (5, 6, null),
+       (9, 9, null),
+       (9, 10, null),
+       (9, 11, null),
+       (10, 9, null),
+       (10, 10, null),
+       (10, 11, null),
+       (13, 13, null),
+       (13, 14, null),
+       (13, 15, null),
+       (13, 16, null);

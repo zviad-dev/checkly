@@ -1,0 +1,17 @@
+version: "2.2"
+
+services:
+  postgres:
+    image: postgres:10.7-alpine
+    restart: always
+    ports:
+      - "6432:5432"
+    environment:
+      POSTGRES_PASSWORD: checkly
+      POSTGRES_DB: checkly
+      POSTGRES_USER: checkly
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U checkly"]
+      interval: 10s
+      timeout: 5s
+      retries: 5

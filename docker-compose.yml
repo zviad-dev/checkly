@@ -1,0 +1,41 @@
+version: '3'
+services:
+  postgres-checkly:
+    image: "postgres:14.2-alpine"
+    container_name: postgres-checkly
+    restart: always
+    environment:
+      - POSTGRES_DB=checkly
+      - POSTGRES_USER=checkly
+      - POSTGRES_PASSWORD=checkly
+    volumes:
+      - "~/pgdata:/var/lib/postgresql/data"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U checkly" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  backend-checkly:
+    build: ./backend
+    image: "backend-checkly"
+    container_name: backend-checkly
+    environment:
+      - SETTINGS_DIR=/app/etc/prod
+      - TZ=Europe/Moscow
+    volumes:
+      - "./backend/src/etc/prod:/app/etc/prod:ro"
+      - "./backend/logs:/app/logs"
+    depends_on:
+      - postgres-checkly
+    restart: always
+  nginx-checkly:
+    build: ./frontend
+    image: "nginx-checkly"
+    container_name: "nginx-checkly"
+    ports:
+      - "80:8080"
+    volumes:
+      - "./frontend/nginx-config/nginx-prod.conf:/etc/nginx/nginx.conf:ro"
+      - "./frontend/logs:/app/logs"
+    depends_on:
+      - backend-checkly
